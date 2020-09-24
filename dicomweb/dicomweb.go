@@ -26,7 +26,7 @@ func PrettyPrint(i interface{}) {
 }
 
 // Client defines the client for connecting to dicom server.
-// For the naming of the member function such as Query, Retireve, etc., see
+// For the naming of the member function such as Query, Retrieve, etc., see
 // https://www.dicomstandard.org/wp-content/uploads/2018/04/DICOMweb-Cheatsheet.pdf
 // for more detail.
 type Client struct {
