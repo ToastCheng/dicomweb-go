@@ -4,7 +4,7 @@
 [![GoDoc](https://img.shields.io/badge/go-doc-blue)](https://pkg.go.dev/github.com/toastcheng/dicomweb-go/dicomweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/toastcheng/dicomweb-go)](https://goreportcard.com/report/github.com/toastcheng/dicomweb-go)
 [![Coverage Status](https://coveralls.io/repos/github/ToastCheng/dicomweb-go/badge.svg)](https://coveralls.io/github/ToastCheng/dicomweb-go)
-[![GitHub Actions](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftoastcheng%dicomweb-go%2Fbadge&style=flat-square)](https://actions-badge.atrox.dev/toastcheng/dicomweb-go/goto)
+[![GitHub Actions](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftoastcheng%2Fdicomweb-go%2Fbadge&style=flat-square)](https://actions-badge.atrox.dev/toastcheng/dicomweb-go/goto)
 
 
 ## Introduction
