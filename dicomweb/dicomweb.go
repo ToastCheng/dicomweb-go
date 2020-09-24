@@ -146,6 +146,9 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 
 	parts := [][]byte{}
 	mediaType, params, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+	if err != nil {
+		return nil, err
+	}
 	if strings.HasPrefix(mediaType, "multipart/") {
 		if params["start"] == "" {
 			mr := multipart.NewReader(resp.Body, params["boundary"])
