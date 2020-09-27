@@ -49,7 +49,11 @@ if err != nil {
 #### Query all series under specific study
 ```go
 
-client := dicomweb.NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+client := dicomweb.NewClient(dicomweb.ClientOption{
+    QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+    WADOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+    STOWEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+})
 
 studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
 qido := dicomweb.QIDORequest{
@@ -67,8 +71,11 @@ fmt.Println(resp)
 
 ##### Retrieve the DICOM file
 ```go
-client := dicomweb.NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
-
+client := dicomweb.NewClient(dicomweb.ClientOption{
+    QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+    WADOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+    STOWEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+})
 studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
 seriesInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.2"
 instanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.3"

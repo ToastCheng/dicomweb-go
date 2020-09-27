@@ -3,6 +3,7 @@ package dicomweb
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,14 +32,24 @@ func PrettyPrint(i interface{}) {
 // for more detail.
 type Client struct {
 	httpClient    *http.Client
-	endpoint      string
+	qidoEndpoint  string
+	wadoEndpoint  string
+	stowEndpoint  string
 	authorization string
 	boundary      string
 }
 
+type ClientOption struct {
+	QIDOEndpoint string
+	WADOEndpoint string
+	STOWEndpoint string
+}
+
 // WithAuthentication configures the client.
 func (c *Client) WithAuthentication(auth string) *Client {
-	c.authorization = auth
+	data := []byte(auth)
+	authStr := "Basic " + base64.StdEncoding.EncodeToString(data)
+	c.authorization = authStr
 	return c
 }
 
@@ -53,17 +64,19 @@ func (c *Client) WithInsecure() *Client {
 }
 
 // NewClient creates a new client.
-func NewClient(endpoint string) *Client {
+func NewClient(option ClientOption) *Client {
 	return &Client{
-		httpClient: &http.Client{},
-		endpoint:   endpoint,
-		boundary:   "dicomwebgoWxkTrZ",
+		httpClient:   &http.Client{},
+		qidoEndpoint: option.QIDOEndpoint,
+		wadoEndpoint: option.WADOEndpoint,
+		stowEndpoint: option.STOWEndpoint,
+		boundary:     "dicomwebgoWxkTrZ",
 	}
 }
 
 // Query based on QIDO, query a list of either matched studies, series or instances.
 func (c *Client) Query(req QIDORequest) ([]QIDOResponse, error) {
-	url := c.endpoint
+	url := c.qidoEndpoint
 	switch req.Type {
 	case Study:
 		url += "/studies"
@@ -119,7 +132,8 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 		return nil, errors.New("parameters does not match the given type")
 	}
 
-	url := c.endpoint
+	url := c.wadoEndpoint
+
 	switch req.Type {
 	case StudyRaw:
 		url += "/studies/" + req.StudyID
@@ -226,10 +240,10 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 
 // Store based on STOW, store the DICOM study to PACS server.
 func (c *Client) Store(req STOWRequest) (interface{}, error) {
-	url := c.endpoint + "/studies"
+	url := c.stowEndpoint
 
 	if req.StudyID != "" {
-		url += "/" + req.StudyID
+		url += "/studies/" + req.StudyID
 	}
 
 	body := &bytes.Buffer{}
@@ -241,6 +255,13 @@ func (c *Client) Store(req STOWRequest) (interface{}, error) {
 
 	for _, p := range req.Parts {
 		w, err := writer.CreatePart(header)
+		if _, e := w.Write([]byte(`{
+			"Resources" : [
+			  "6ca4c9f3-5e895cb3-4d82c6da-09e060fe-9c59f228"
+			]
+		  }`)); e != nil {
+			log.Print(e)
+		}
 		if err != nil {
 			return nil, err
 		}

@@ -7,7 +7,9 @@ import (
 )
 
 func TestQIDOQueryCertainStudy(t *testing.T) {
-	c := NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := NewClient(ClientOption{
+		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170125112931.11"
 	qido := QIDORequest{
@@ -22,7 +24,9 @@ func TestQIDOQueryCertainStudy(t *testing.T) {
 }
 
 func TestQIDOQueryCertainSeries(t *testing.T) {
-	c := NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := NewClient(ClientOption{
+		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
 	seriesInstanceUID := "2.25.720409440530442732085780991589110433975"
@@ -42,7 +46,9 @@ func TestQIDOQueryCertainSeries(t *testing.T) {
 }
 
 func TestQIDOQueryCertainInstance(t *testing.T) {
-	c := NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := NewClient(ClientOption{
+		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
 	seriesInstanceUID := "2.25.687032174858108535882385160051760343725"
@@ -67,14 +73,16 @@ func TestQIDOQueryCertainInstance(t *testing.T) {
 }
 
 func TestWADORetrieve(t *testing.T) {
-	c := NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := NewClient(ClientOption{
+		WADOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
 	seriesInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.2"
 	instanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.3"
 
 	wado := WADORequest{
-		Type:       InstanceMetadata,
+		Type:       InstanceRaw,
 		StudyID:    studyInstanceUID,
 		SeriesID:   seriesInstanceUID,
 		InstanceID: instanceUID,
@@ -92,7 +100,9 @@ func TestWADORetrieve(t *testing.T) {
 }
 
 func TestSTOWStore(t *testing.T) {
-	c := NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := NewClient(ClientOption{
+		STOWEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	parts := [][]byte{}
 	// read your data like this:

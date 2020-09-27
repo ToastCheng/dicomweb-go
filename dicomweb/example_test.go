@@ -11,7 +11,9 @@ import (
 )
 
 func ExampleClient_Query_allStudy() {
-	c := dicomweb.NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := dicomweb.NewClient(dicomweb.ClientOption{
+		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	qido := dicomweb.QIDORequest{
 		Type: dicomweb.Study,
@@ -24,7 +26,9 @@ func ExampleClient_Query_allStudy() {
 }
 
 func ExampleClient_Query_certainStudy() {
-	c := dicomweb.NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := dicomweb.NewClient(dicomweb.ClientOption{
+		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170125112931.11"
 	qido := dicomweb.QIDORequest{
@@ -39,7 +43,9 @@ func ExampleClient_Query_certainStudy() {
 }
 
 func ExampleClient_Query_certainSeries() {
-	c := dicomweb.NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := dicomweb.NewClient(dicomweb.ClientOption{
+		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
 	seriesInstanceUID := "2.25.720409440530442732085780991589110433975"
@@ -56,7 +62,9 @@ func ExampleClient_Query_certainSeries() {
 }
 
 func ExampleClient_Query_certainInstance() {
-	c := dicomweb.NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := dicomweb.NewClient(dicomweb.ClientOption{
+		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
 	seriesInstanceUID := "2.25.687032174858108535882385160051760343725"
@@ -75,7 +83,9 @@ func ExampleClient_Query_certainInstance() {
 }
 
 func Example_Retrieve() {
-	c := dicomweb.NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := dicomweb.NewClient(dicomweb.ClientOption{
+		WADOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
 	seriesInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.2"
@@ -103,7 +113,9 @@ func Example_Retrieve() {
 }
 
 func ExampleClient_Store() {
-	c := dicomweb.NewClient("https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs")
+	c := dicomweb.NewClient(dicomweb.ClientOption{
+		STOWEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+	})
 
 	parts := [][]byte{}
 	// read your data like this:
