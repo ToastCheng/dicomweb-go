@@ -12,6 +12,7 @@ A Dicomweb client for Golang.
 
 ## Documentation
 * Go Doc : https://pkg.go.dev/github.com/toastcheng/dicomweb-go/dicomweb
+* Dicomweb : https://www.dicomstandard.org/dicomweb
 
 ## Requirements
 * Go 1.12+

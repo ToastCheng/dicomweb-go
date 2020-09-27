@@ -63,15 +63,17 @@ func NewClient(endpoint string) *Client {
 
 // Query based on QIDO, query a list of either matched studies, series or instances.
 func (c *Client) Query(req QIDORequest) ([]QIDOResponse, error) {
-
 	url := c.endpoint
 	switch req.Type {
 	case Study:
-		url += "/studies?"
+		url += "/studies"
 	case Series:
-		url += "/series?"
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series"
 	case Instance:
-		url += "/instances?"
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series/" + req.SeriesInstanceUID
+		url += "/instances"
 	default:
 		return nil, errors.New("failed to query: need to specify query type")
 	}
@@ -108,30 +110,54 @@ func (c *Client) Query(req QIDORequest) ([]QIDOResponse, error) {
 
 	result := []QIDOResponse{}
 	json.NewDecoder(resp.Body).Decode(&result)
-
 	return result, nil
 }
 
 // Retrieve based on WADO, retrieve the DICOM image of given id.
 func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
-	url := c.endpoint
+	if ok := req.Validate(); !ok {
+		return nil, errors.New("parameters does not match the given type")
+	}
 
-	if req.RetrieveURL != "" {
-		// use the retrieve url directly if present.
+	url := c.endpoint
+	switch req.Type {
+	case StudyRaw:
+		url += "/studies/" + req.StudyID
+	case StudyRendered:
+		url += "/studies/" + req.StudyID
+		url += "/rendered"
+	case SeriesRaw:
+		url += "/studies/" + req.StudyID
+		url += "/series/" + req.SeriesID
+	case SeriesRendered:
+		url += "/studies/" + req.StudyID
+		url += "/series/" + req.SeriesID
+		url += "/rendered"
+	case SeriesMetadata:
+		url += "/studies/" + req.StudyID
+		url += "/series/" + req.SeriesID
+		url += "/metadata"
+	case InstanceRaw:
+		url += "/studies/" + req.StudyID
+		url += "/series/" + req.SeriesID
+		url += "/instances/" + req.InstanceID
+	case InstanceRendered:
+		url += "/studies/" + req.StudyID
+		url += "/series/" + req.SeriesID
+		url += "/instances/" + req.InstanceID
+		url += "/rendered"
+	case InstanceMetadata:
+		url += "/studies/" + req.StudyID
+		url += "/series/" + req.SeriesID
+		url += "/instances/" + req.InstanceID
+		url += "/metadata"
+	case Frame:
+		url += "/studies/" + req.StudyID
+		url += "/series/" + req.SeriesID
+		url += "/instances/" + req.InstanceID
+		url += "/frames/" + strconv.Itoa(req.FrameID)
+	case URIReference:
 		url = req.RetrieveURL
-	} else {
-		if req.StudyID != "" {
-			url += "/studies/" + req.StudyID
-		}
-		if req.SeriesID != "" {
-			url += "/series/" + req.SeriesID
-		}
-		if req.InstanceID != "" {
-			url += "/instances/" + req.InstanceID
-		}
-		if req.FrameID != 0 {
-			url += "/frames/" + strconv.Itoa(req.FrameID)
-		}
 	}
 
 	r, _ := http.NewRequest("GET", url, nil)
@@ -143,6 +169,11 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode/100 != 2 {
+		b, _ := ioutil.ReadAll(resp.Body)
+		return nil, errors.New(string(b))
+	}
 
 	parts := [][]byte{}
 	mediaType, params, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
