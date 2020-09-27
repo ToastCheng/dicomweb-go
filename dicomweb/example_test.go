@@ -72,16 +72,6 @@ func ExampleClient_Query_certainInstance() {
 		fmt.Errorf("faild to query: %v", err)
 	}
 	fmt.Println(resp)
-
-	// if len(resp) > 0 {
-	// 	assert.Equal(t, studyInstanceUID, resp[0].StudyInstanceUID.Value[0].(string))
-	// }
-	// if len(resp) > 0 {
-	// 	assert.Equal(t, seriesInstanceUID, resp[0].SeriesInstanceUID.Value[0].(string))
-	// }
-	// if len(resp) > 0 {
-	// 	assert.Equal(t, instanceUID, resp[0].SOPInstanceUID.Value[0].(string))
-	// }
 }
 
 func Example_Retrieve() {
