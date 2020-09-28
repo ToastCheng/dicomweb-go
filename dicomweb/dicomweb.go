@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -19,12 +18,6 @@ import (
 
 	"github.com/philippfranke/multipart-related/related"
 )
-
-// PrettyPrint pretty print JSON object.
-func PrettyPrint(i interface{}) {
-	s, _ := json.MarshalIndent(i, "", "\t")
-	fmt.Println(string(s))
-}
 
 // Client defines the client for connecting to dicom server.
 // For the naming of the member function such as Query, Retrieve, etc., see
@@ -39,9 +32,13 @@ type Client struct {
 	boundary      string
 }
 
+// ClientOption specifies the option for the DICOMweb client.
 type ClientOption struct {
+	// QIDOEndpoint endpoint for QIDO.
 	QIDOEndpoint string
+	// WADOEndpoint endpoint for WADO.
 	WADOEndpoint string
+	// STOWEndpoint endpoint for STOW.
 	STOWEndpoint string
 }
 

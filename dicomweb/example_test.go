@@ -19,7 +19,8 @@ func ExampleClient_Query_allStudy() {
 	}
 	resp, err := c.Query(qido)
 	if err != nil {
-		fmt.Errorf("faild to query: %v", err)
+		fmt.Printf("faild to query: %v", err)
+		return
 	}
 	fmt.Println(resp)
 }
@@ -36,7 +37,8 @@ func ExampleClient_Query_certainStudy() {
 	}
 	resp, err := c.Query(qido)
 	if err != nil {
-		fmt.Errorf("faild to query: %v", err)
+		fmt.Printf("faild to query: %v", err)
+		return
 	}
 	fmt.Println(resp[0].StudyInstanceUID.Value[0].(string))
 }
@@ -55,7 +57,8 @@ func ExampleClient_Query_certainSeries() {
 	}
 	resp, err := c.Query(qido)
 	if err != nil {
-		fmt.Errorf("faild to query: %v", err)
+		fmt.Printf("faild to query: %v", err)
+		return
 	}
 	fmt.Println(resp)
 }
@@ -76,12 +79,13 @@ func ExampleClient_Query_certainInstance() {
 	}
 	resp, err := c.Query(qido)
 	if err != nil {
-		fmt.Errorf("faild to query: %v", err)
+		fmt.Printf("faild to query: %v", err)
+		return
 	}
 	fmt.Println(resp)
 }
 
-func Example_Retrieve() {
+func ExampleClient_Retrieve() {
 	c := dicomweb.NewClient(dicomweb.ClientOption{
 		WADOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
 	})
@@ -99,14 +103,16 @@ func Example_Retrieve() {
 	}
 	parts, err := c.Retrieve(wado)
 	if err != nil {
-		fmt.Errorf("faild to query: %v", err)
+		fmt.Printf("faild to query: %v", err)
+		return
 	}
 
 	for i, p := range parts {
 		// save it into file like this:
 		err := ioutil.WriteFile("/tmp/test_"+strconv.Itoa(i)+".dcm", p, 0666)
 		if err != nil {
-			fmt.Errorf("faild to retrieve: %v", err)
+			fmt.Printf("faild to retrieve: %v", err)
+			return
 		}
 	}
 }
@@ -133,7 +139,8 @@ func ExampleClient_Store() {
 	}
 	resp, err := c.Store(stow)
 	if err != nil {
-		fmt.Errorf("faild to query: %v", err)
+		fmt.Printf("faild to query: %v", err)
+		return
 	}
 	fmt.Println(resp)
 }

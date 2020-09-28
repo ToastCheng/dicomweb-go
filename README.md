@@ -42,7 +42,7 @@ qido := dicomweb.QIDORequest{
 }
 resp, err := client.Query(qido)
 if err != nil {
-    fmt.Errorf("faild to query: %v", err)
+    log.Fatalf("faild to query: %v", err)
 }
 ```
 
@@ -63,9 +63,9 @@ qido := dicomweb.QIDORequest{
 }
 resp, err := client.Query(qido)
 if err != nil {
-    fmt.Errorf("faild to query: %v", err)
+    log.Fatalf("faild to query: %v", err)
 }
-fmt.Println(resp)
+log.Println(resp)
 ```
 
 ##### Retrieve the DICOM file
@@ -88,14 +88,14 @@ wado := dicomweb.WADORequest{
 }
 parts, err := client.Retrieve(wado)
 if err != nil {
-    fmt.Errorf("faild to query: %v", err)
+    log.Fatalf("faild to query: %v", err)
 }
 
 for i, p := range parts {
     // save it into file like this:
     err := ioutil.WriteFile("/tmp/test_"+strconv.Itoa(i)+".dcm", p, 0666)
     if err != nil {
-        fmt.Errorf("faild to retrieve: %v", err)
+        log.Fatalf("faild to retrieve: %v", err)
     }
 }
 ```
@@ -124,9 +124,9 @@ stow := dicomweb.STOWRequest{
 }
 resp, err := c.Store(stow)
 if err != nil {
-    fmt.Errorf("faild to query: %v", err)
+    log.Fatalf("faild to query: %v", err)
 }
-fmt.Println(resp)
+log.Println(resp)
 ```
 
 ## Contributing

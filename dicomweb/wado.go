@@ -15,6 +15,7 @@ type WADORequest struct {
 	Window            string
 }
 
+// Validate validates if the request is valid.
 func (r WADORequest) Validate() bool {
 	switch r.Type {
 	case StudyRaw:
@@ -45,24 +46,24 @@ func (r WADORequest) Validate() bool {
 type WADOType int
 
 const (
-	// StudyRaw
+	// StudyRaw raw study.
 	StudyRaw WADOType = iota + 1
-	// StudyRendered
+	// StudyRendered rendered study.
 	StudyRendered
-	// SeriesRaw
+	// SeriesRaw raw series.
 	SeriesRaw
-	// SeriesRendered
+	// SeriesRendered rendered series.
 	SeriesRendered
-	// SeriesMetadata
+	// SeriesMetadata series metadata.
 	SeriesMetadata
-	// InstanceRaw
+	// InstanceRaw raw instance.
 	InstanceRaw
-	// InstanceRendered
+	// InstanceRendered rendered instance.
 	InstanceRendered
-	// InstanceMetadata
+	// InstanceMetadata instance metadata.
 	InstanceMetadata
-	// Frame
+	// Frame frame.
 	Frame
-	// URIReference
+	// URIReference URI reference.
 	URIReference
 )
