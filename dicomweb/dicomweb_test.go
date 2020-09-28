@@ -82,11 +82,11 @@ func TestWADORetrieve(t *testing.T) {
 	instanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.3"
 
 	wado := WADORequest{
-		Type:       InstanceRaw,
-		StudyID:    studyInstanceUID,
-		SeriesID:   seriesInstanceUID,
-		InstanceID: instanceUID,
-		FrameID:    1,
+		Type:              InstanceRaw,
+		StudyInstanceUID:  studyInstanceUID,
+		SeriesInstanceUID: seriesInstanceUID,
+		SOPInstanceUID:    instanceUID,
+		FrameID:           1,
 	}
 	parts, err := c.Retrieve(wado)
 	assert.NoError(t, err)
@@ -106,16 +106,15 @@ func TestSTOWStore(t *testing.T) {
 
 	parts := [][]byte{}
 	// read your data like this:
-	// file, err := os.Open("data.dcm")
+	// b, err := ioutil.ReadFile("data.dcm")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	// b := make([]byte, 100)
-	// file.Read(b)
 	// parts = append(parts, b)
 
 	stow := STOWRequest{
-		Parts: parts,
+		StudyInstanceUID: "1.2.840.113820.0.20200429.174041.3",
+		Parts:            parts,
 	}
 	_, err := c.Store(stow)
 	assert.NoError(t, err)

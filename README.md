@@ -18,7 +18,7 @@ This package provides a simple DICOMweb client that allows you to query DICOM in
 
 
 ## Documentation
-* Go Doc : https://pkg.go.dev/github.com/toastcheng/dicomweb-go/dicomweb
+* pkg.go.dev : https://pkg.go.dev/github.com/toastcheng/dicomweb-go/dicomweb
 * Dicomweb : https://www.dicomstandard.org/dicomweb
 
 ## Getting Started
@@ -66,7 +66,6 @@ if err != nil {
     fmt.Errorf("faild to query: %v", err)
 }
 fmt.Println(resp)
-
 ```
 
 ##### Retrieve the DICOM file
@@ -81,11 +80,11 @@ seriesInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.2"
 instanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.3"
 
 wado := dicomweb.WADORequest{
-    Type:       dicomweb.InstanceMetadata,
-    StudyID:    studyInstanceUID,
-    SeriesID:   seriesInstanceUID,
-    InstanceID: instanceUID,
-    FrameID:    1,
+    Type:              dicomweb.InstanceRaw,
+    StudyInstanceUID:  studyInstanceUID,
+    SeriesInstanceUID: seriesInstanceUID,
+    SOPInstanceUID:    instanceUID,
+    FrameID:           1,
 }
 parts, err := client.Retrieve(wado)
 if err != nil {
@@ -99,6 +98,35 @@ for i, p := range parts {
         fmt.Errorf("faild to retrieve: %v", err)
     }
 }
+```
+
+##### Store the DICOM file
+
+```go
+client := dicomweb.NewClient(dicomweb.ClientOption{
+    STOWEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+})
+
+parts := [][]byte{}
+// read your data like this:
+for i := 0; i < 10; i++ {
+    fname := fmt.Sprintf("data_%d.dcm", i)
+    b, err := ioutil.ReadFile(fname)
+    if err != nil {
+        log.Fatal(err)
+    }
+    parts = append(parts, b)
+}
+
+stow := dicomweb.STOWRequest{
+    StudyInstanceUID: "1.2.840.113820.0.20200429.174041.3",
+    Parts:            parts,
+}
+resp, err := c.Store(stow)
+if err != nil {
+    fmt.Errorf("faild to query: %v", err)
+}
+fmt.Println(resp)
 ```
 
 ## Contributing

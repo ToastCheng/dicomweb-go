@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"strconv"
 
 	"github.com/toastcheng/dicomweb-go/dicomweb"
@@ -92,11 +91,11 @@ func Example_Retrieve() {
 	instanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.3"
 
 	wado := dicomweb.WADORequest{
-		Type:       dicomweb.InstanceMetadata,
-		StudyID:    studyInstanceUID,
-		SeriesID:   seriesInstanceUID,
-		InstanceID: instanceUID,
-		FrameID:    1,
+		Type:              dicomweb.InstanceMetadata,
+		StudyInstanceUID:  studyInstanceUID,
+		SeriesInstanceUID: seriesInstanceUID,
+		SOPInstanceUID:    instanceUID,
+		FrameID:           1,
 	}
 	parts, err := c.Retrieve(wado)
 	if err != nil {
@@ -119,16 +118,18 @@ func ExampleClient_Store() {
 
 	parts := [][]byte{}
 	// read your data like this:
-	file, err := os.Open("/tmp/test_0.dcm")
-	if err != nil {
-		log.Fatal(err)
+	for i := 0; i < 1; i++ {
+		fname := fmt.Sprintf("/tmp/test_%d.dcm", i)
+		b, err := ioutil.ReadFile(fname)
+		if err != nil {
+			log.Fatal(err)
+		}
+		parts = append(parts, b)
 	}
-	b := make([]byte, 100)
-	file.Read(b)
-	parts = append(parts, b)
 
 	stow := dicomweb.STOWRequest{
-		Parts: parts,
+		StudyInstanceUID: "1.2.840.113820.0.20200429.174041.3",
+		Parts:            parts,
 	}
 	resp, err := c.Store(stow)
 	if err != nil {

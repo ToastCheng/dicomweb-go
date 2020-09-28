@@ -2,39 +2,39 @@ package dicomweb
 
 // WADORequest defines the filter option used in WADO queries.
 type WADORequest struct {
-	Type        WADOType
-	StudyID     string
-	SeriesID    string
-	InstanceID  string
-	PatientName string
-	FrameID     int
-	RetrieveURL string
-	Annotation  string
-	Quality     int
-	Viewport    string
-	Window      string
+	Type              WADOType
+	StudyInstanceUID  string
+	SeriesInstanceUID string
+	SOPInstanceUID    string
+	PatientName       string
+	FrameID           int
+	RetrieveURL       string
+	Annotation        string
+	Quality           int
+	Viewport          string
+	Window            string
 }
 
 func (r WADORequest) Validate() bool {
 	switch r.Type {
 	case StudyRaw:
-		return r.StudyID != "" && r.SeriesID == "" && r.InstanceID == ""
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID == "" && r.SOPInstanceUID == ""
 	case StudyRendered:
-		return r.StudyID != "" && r.SeriesID == "" && r.InstanceID == ""
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID == "" && r.SOPInstanceUID == ""
 	case SeriesRaw:
-		return r.StudyID != "" && r.SeriesID != "" && r.InstanceID == ""
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID != "" && r.SOPInstanceUID == ""
 	case SeriesRendered:
-		return r.StudyID != "" && r.SeriesID != "" && r.InstanceID == ""
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID != "" && r.SOPInstanceUID == ""
 	case SeriesMetadata:
-		return r.StudyID != "" && r.SeriesID != "" && r.InstanceID == ""
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID != "" && r.SOPInstanceUID == ""
 	case InstanceRaw:
-		return r.StudyID != "" && r.SeriesID != "" && r.InstanceID != ""
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID != "" && r.SOPInstanceUID != ""
 	case InstanceRendered:
-		return r.StudyID != "" && r.SeriesID != "" && r.InstanceID != ""
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID != "" && r.SOPInstanceUID != ""
 	case InstanceMetadata:
-		return r.StudyID != "" && r.SeriesID != "" && r.InstanceID != ""
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID != "" && r.SOPInstanceUID != ""
 	case Frame:
-		return r.StudyID != "" && r.SeriesID != "" && r.InstanceID != "" && r.FrameID != 0
+		return r.StudyInstanceUID != "" && r.SeriesInstanceUID != "" && r.SOPInstanceUID != "" && r.FrameID != 0
 	case URIReference:
 		return r.RetrieveURL != ""
 	}

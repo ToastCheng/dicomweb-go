@@ -136,39 +136,39 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 
 	switch req.Type {
 	case StudyRaw:
-		url += "/studies/" + req.StudyID
+		url += "/studies/" + req.StudyInstanceUID
 	case StudyRendered:
-		url += "/studies/" + req.StudyID
+		url += "/studies/" + req.StudyInstanceUID
 		url += "/rendered"
 	case SeriesRaw:
-		url += "/studies/" + req.StudyID
-		url += "/series/" + req.SeriesID
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series/" + req.SeriesInstanceUID
 	case SeriesRendered:
-		url += "/studies/" + req.StudyID
-		url += "/series/" + req.SeriesID
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series/" + req.SeriesInstanceUID
 		url += "/rendered"
 	case SeriesMetadata:
-		url += "/studies/" + req.StudyID
-		url += "/series/" + req.SeriesID
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series/" + req.SeriesInstanceUID
 		url += "/metadata"
 	case InstanceRaw:
-		url += "/studies/" + req.StudyID
-		url += "/series/" + req.SeriesID
-		url += "/instances/" + req.InstanceID
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series/" + req.SeriesInstanceUID
+		url += "/instances/" + req.SOPInstanceUID
 	case InstanceRendered:
-		url += "/studies/" + req.StudyID
-		url += "/series/" + req.SeriesID
-		url += "/instances/" + req.InstanceID
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series/" + req.SeriesInstanceUID
+		url += "/instances/" + req.SOPInstanceUID
 		url += "/rendered"
 	case InstanceMetadata:
-		url += "/studies/" + req.StudyID
-		url += "/series/" + req.SeriesID
-		url += "/instances/" + req.InstanceID
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series/" + req.SeriesInstanceUID
+		url += "/instances/" + req.SOPInstanceUID
 		url += "/metadata"
 	case Frame:
-		url += "/studies/" + req.StudyID
-		url += "/series/" + req.SeriesID
-		url += "/instances/" + req.InstanceID
+		url += "/studies/" + req.StudyInstanceUID
+		url += "/series/" + req.SeriesInstanceUID
+		url += "/instances/" + req.SOPInstanceUID
 		url += "/frames/" + strconv.Itoa(req.FrameID)
 	case URIReference:
 		url = req.RetrieveURL
@@ -240,10 +240,10 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 
 // Store based on STOW, store the DICOM study to PACS server.
 func (c *Client) Store(req STOWRequest) (interface{}, error) {
-	url := c.stowEndpoint
+	url := c.stowEndpoint + "/studies/"
 
-	if req.StudyID != "" {
-		url += "/studies/" + req.StudyID
+	if req.StudyInstanceUID != "" {
+		url += req.StudyInstanceUID
 	}
 
 	body := &bytes.Buffer{}
@@ -255,13 +255,6 @@ func (c *Client) Store(req STOWRequest) (interface{}, error) {
 
 	for _, p := range req.Parts {
 		w, err := writer.CreatePart(header)
-		if _, e := w.Write([]byte(`{
-			"Resources" : [
-			  "6ca4c9f3-5e895cb3-4d82c6da-09e060fe-9c59f228"
-			]
-		  }`)); e != nil {
-			log.Print(e)
-		}
 		if err != nil {
 			return nil, err
 		}
