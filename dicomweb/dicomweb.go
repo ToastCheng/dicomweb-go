@@ -94,15 +94,20 @@ func (c *Client) Query(req QIDORequest) ([]QIDOResponse, error) {
 		return nil, err
 	}
 	q := r.URL.Query()
-	mp := map[string]string{}
+	mp := map[string]interface{}{}
 	databytes, _ := json.Marshal(req)
 	json.Unmarshal(databytes, &mp)
+
 	for k, v := range mp {
 		if k == "Type" || k == "0020000D" || k == "0020000E" || k == "00080018" {
 			continue
 		}
-
-		q.Add(k, v)
+		switch t := v.(type) {
+		case float64:
+			q.Add(k, fmt.Sprintf("%.0f", t))
+		case string:
+			q.Add(k, t)
+		}
 	}
 
 	r.URL.RawQuery = q.Encode()
@@ -173,7 +178,10 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 		url = req.RetrieveURL
 	}
 
-	r, _ := http.NewRequest("GET", url, nil)
+	r, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 	if c.authorization != "" {
 		r.Header.Set("Authorization", c.authorization)
 	}
@@ -184,8 +192,8 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode/100 != 2 {
-		b, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.New(string(b))
+		// b, _ := ioutil.ReadAll(resp.Body)
+		return nil, errors.New(resp.Status)
 	}
 
 	parts := [][]byte{}
@@ -193,45 +201,41 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.HasPrefix(mediaType, "multipart/") {
-		if params["start"] == "" {
-			mr := multipart.NewReader(resp.Body, params["boundary"])
-			for {
-				p, err := mr.NextPart()
-				if err == io.EOF {
-					return parts, nil
-				} else if err != nil {
-					log.Fatalf("failed to read next multipart: %v", err)
-					return nil, err
-				}
+	if !strings.HasPrefix(mediaType, "multipart/") {
+		return nil, errors.New("unexpected Content-Type, should be multipart/related")
+	}
 
-				data, err := ioutil.ReadAll(p)
-				if err != nil {
-					log.Fatalf("failed to read multipart response: %v", err)
-					return nil, err
-				}
-				parts = append(parts, data)
-			}
-		} else {
-			r := related.NewReader(resp.Body, params)
-			obj, err := r.ReadObject()
-			if err != nil {
+	if params["start"] == "" {
+		mr := multipart.NewReader(resp.Body, params["boundary"])
+		for {
+			p, err := mr.NextPart()
+			if err == io.EOF {
+				return parts, nil
+			} else if err != nil {
+				log.Fatalf("failed to read next multipart: %v", err)
 				return nil, err
 			}
-			for _, part := range obj.Values {
-				data, err := ioutil.ReadAll(part)
-				if err != nil {
-					return nil, err
-				}
-				parts = append(parts, data)
+
+			data, err := ioutil.ReadAll(p)
+			if err != nil {
+				log.Fatalf("failed to read multipart response: %v", err)
+				return nil, err
 			}
+			parts = append(parts, data)
 		}
 	} else {
-		data, err := ioutil.ReadAll(resp.Body)
+		r := related.NewReader(resp.Body, params)
+		obj, err := r.ReadObject()
 		if err != nil {
 			return nil, err
 		}
-		parts = append(parts, data)
+		for _, part := range obj.Values {
+			data, err := ioutil.ReadAll(part)
+			if err != nil {
+				return nil, err
+			}
+			parts = append(parts, data)
+		}
 	}
 
 	return parts, nil
