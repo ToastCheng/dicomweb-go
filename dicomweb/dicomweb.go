@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -97,9 +98,10 @@ func (c *Client) Query(req QIDORequest) ([]QIDOResponse, error) {
 	databytes, _ := json.Marshal(req)
 	json.Unmarshal(databytes, &mp)
 	for k, v := range mp {
-		if k == "Type" {
+		if k == "Type" || k == "0020000D" || k == "0020000E" || k == "00080018" {
 			continue
 		}
+
 		q.Add(k, v)
 	}
 
@@ -269,7 +271,9 @@ func (c *Client) Store(req STOWRequest) (interface{}, error) {
 		return nil, err
 	}
 
-	r.Header.Set("Content-Type", "multipart/related; type=application/dicom; boundary="+c.boundary)
+	// The RFC 2045 doc states that certain values cannot be used as parameter values in the Content-Type header,
+	// which includes '/', so the `application/dicom` needs to be wrapped by double quotes.
+	r.Header.Set("Content-Type", fmt.Sprintf("multipart/related; type=\"application/dicom\"; boundary=%s", c.boundary))
 	if c.authorization != "" {
 		r.Header.Set("Authorization", c.authorization)
 	}

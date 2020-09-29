@@ -95,7 +95,7 @@ func ExampleClient_Retrieve() {
 	instanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.3"
 
 	wado := dicomweb.WADORequest{
-		Type:              dicomweb.InstanceMetadata,
+		Type:              dicomweb.InstanceRaw,
 		StudyInstanceUID:  studyInstanceUID,
 		SeriesInstanceUID: seriesInstanceUID,
 		SOPInstanceUID:    instanceUID,

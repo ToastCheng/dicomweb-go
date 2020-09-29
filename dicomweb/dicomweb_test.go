@@ -1,6 +1,11 @@
 package dicomweb
 
 import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"mime"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -33,80 +38,81 @@ func TestClientWithInsecure(t *testing.T) {
 	assert.Equal(t, true, insecure)
 }
 
-func TestQIDOQueryCertainStudy(t *testing.T) {
+func TestQIDOQueryAllStudy(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/studies", r.URL.String())
+	}))
+
 	c := NewClient(ClientOption{
-		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+		QIDOEndpoint: ts.URL,
 	})
 
-	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170125112931.11"
 	qido := QIDORequest{
-		Type:             Study,
+		Type: Study,
+	}
+	_, err := c.Query(qido)
+	assert.NoError(t, err)
+
+}
+
+func TestQIDOQuerySeries(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/studies/study-id/series", r.URL.String())
+	}))
+
+	c := NewClient(ClientOption{
+		QIDOEndpoint: ts.URL,
+	})
+
+	studyInstanceUID := "study-id"
+	qido := QIDORequest{
+		Type:             Series,
 		StudyInstanceUID: studyInstanceUID,
 	}
-	resp, err := c.Query(qido)
+	_, err := c.Query(qido)
 	assert.NoError(t, err)
-	if len(resp) > 0 {
-		assert.Equal(t, studyInstanceUID, resp[0].StudyInstanceUID.Value[0].(string))
-	}
 }
 
-func TestQIDOQueryCertainSeries(t *testing.T) {
+func TestQIDOQueryInstance(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/studies/study-id/series/series-id/instances", r.URL.String())
+	}))
 	c := NewClient(ClientOption{
-		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+		QIDOEndpoint: ts.URL,
 	})
 
-	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
-	seriesInstanceUID := "2.25.720409440530442732085780991589110433975"
-	qido := QIDORequest{
-		Type:              Series,
-		StudyInstanceUID:  studyInstanceUID,
-		SeriesInstanceUID: seriesInstanceUID,
-	}
-	resp, err := c.Query(qido)
-	assert.NoError(t, err)
-	if len(resp) > 0 {
-		assert.Equal(t, studyInstanceUID, resp[0].StudyInstanceUID.Value[0].(string))
-	}
-	if len(resp) > 0 {
-		assert.Equal(t, seriesInstanceUID, resp[0].SeriesInstanceUID.Value[0].(string))
-	}
-}
-
-func TestQIDOQueryCertainInstance(t *testing.T) {
-	c := NewClient(ClientOption{
-		QIDOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
-	})
-
-	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
-	seriesInstanceUID := "2.25.687032174858108535882385160051760343725"
-	instanceUID := "773645909590137995838355818619864160367"
+	studyInstanceUID := "study-id"
+	seriesInstanceUID := "series-id"
 	qido := QIDORequest{
 		Type:              Instance,
 		StudyInstanceUID:  studyInstanceUID,
 		SeriesInstanceUID: seriesInstanceUID,
-		SOPInstanceUID:    instanceUID,
 	}
-	resp, err := c.Query(qido)
+	_, err := c.Query(qido)
 	assert.NoError(t, err)
-	if len(resp) > 0 {
-		assert.Equal(t, studyInstanceUID, resp[0].StudyInstanceUID.Value[0].(string))
-	}
-	if len(resp) > 0 {
-		assert.Equal(t, seriesInstanceUID, resp[0].SeriesInstanceUID.Value[0].(string))
-	}
-	if len(resp) > 0 {
-		assert.Equal(t, instanceUID, resp[0].SOPInstanceUID.Value[0].(string))
-	}
 }
 
 func TestWADORetrieve(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		boundary := "TOAST"
+		w.Header().Set("Content-Type", fmt.Sprintf("multipart/related; type=\"application/dicom\"; boundary=%s", boundary))
+		fmt.Fprint(w, `--TOAST
+Content-Type: application/dicom
+
+part: 0
+--TOAST
+Content-Type: application/dicom
+
+part: 1
+--TOAST--`)
+	}))
 	c := NewClient(ClientOption{
-		WADOEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+		WADOEndpoint: ts.URL,
 	})
 
-	studyInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.1"
-	seriesInstanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.2"
-	instanceUID := "1.3.6.1.4.1.25403.345050719074.3824.20170126085406.3"
+	studyInstanceUID := "study-id"
+	seriesInstanceUID := "series-id"
+	instanceUID := "instance-id"
 
 	wado := WADORequest{
 		Type:              InstanceRaw,
@@ -119,25 +125,44 @@ func TestWADORetrieve(t *testing.T) {
 	assert.NoError(t, err)
 
 	for i, p := range parts {
-		assert.NotNil(t, p, "data is empty on #%d part", i)
-		// save it into file like this:
-		// err := ioutil.WriteFile("test_"+strconv.Itoa(i)+".dcm", p, 0666)
-		assert.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("part: %d", i), string(p))
 	}
 }
 
 func TestSTOWStore(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		contentType, params, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
+		assert.Contains(t, contentType, "multipart/")
+
+		multipartReader := multipart.NewReader(r.Body, params["boundary"])
+		defer r.Body.Close()
+
+		idx := 0
+		for {
+			part, err := multipartReader.NextPart()
+			if err == io.EOF {
+				break
+			}
+			assert.NoError(t, err)
+			defer part.Close()
+
+			fileBytes, err := ioutil.ReadAll(part)
+			assert.NoError(t, err)
+
+			assert.Equal(t, fmt.Sprintf("part: %d", idx), string(fileBytes))
+			idx++
+		}
+	}))
+
 	c := NewClient(ClientOption{
-		STOWEndpoint: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs",
+		STOWEndpoint: ts.URL,
 	})
 
 	parts := [][]byte{}
-	// read your data like this:
-	// b, err := ioutil.ReadFile("data.dcm")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// parts = append(parts, b)
+	for i := 0; i < 3; i++ {
+		p := []byte(fmt.Sprintf("part: %d", i))
+		parts = append(parts, p)
+	}
 
 	stow := STOWRequest{
 		StudyInstanceUID: "1.2.840.113820.0.20200429.174041.3",
