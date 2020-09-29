@@ -1,10 +1,37 @@
 package dicomweb
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestClientWithAuthentication(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "Basic dXNlcjpwYXNzd29yZA==", r.Header.Get("Authorization"))
+	}))
+	c := NewClient(ClientOption{
+		QIDOEndpoint: ts.URL,
+		WADOEndpoint: ts.URL,
+		STOWEndpoint: ts.URL,
+	}).WithAuthentication("user:password")
+
+	// just make an arbitrary request to mock server.
+	qido := QIDORequest{
+		Type:             Study,
+		StudyInstanceUID: "study-instance-id",
+	}
+	c.Query(qido)
+}
+
+func TestClientWithInsecure(t *testing.T) {
+	c := NewClient(ClientOption{}).WithInsecure()
+
+	insecure := c.httpClient.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify
+	assert.Equal(t, true, insecure)
+}
 
 func TestQIDOQueryCertainStudy(t *testing.T) {
 	c := NewClient(ClientOption{
