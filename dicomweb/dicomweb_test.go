@@ -163,7 +163,7 @@ func TestQIDOQueryInvalidURL(t *testing.T) {
 	}
 	_, err := c.Query(qido)
 	if assert.Error(t, err) {
-		assert.Equal(t, "parse %$^/studies: invalid URL escape \"%$^\"", err.Error())
+		assert.Contains(t, err.Error(), "invalid URL escape \"%$^\"")
 	}
 }
 
@@ -208,7 +208,7 @@ func TestWADOQueryInvalidURL(t *testing.T) {
 	}
 	_, err := c.Retrieve(wado)
 	if assert.Error(t, err) {
-		assert.Equal(t, "parse %$^/studies/study-id: invalid URL escape \"%$^\"", err.Error())
+		assert.Contains(t, err.Error(), "invalid URL escape \"%$^\"")
 	}
 }
 
