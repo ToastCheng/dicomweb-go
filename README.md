@@ -1,7 +1,7 @@
 # DICOMweb Go
 
 [![license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/toastcheng/dicomweb-go/blob/master/LICENSE.md)
-[![GoDoc](https://img.shields.io/badge/go-doc-blue)](https://pkg.go.dev/github.com/toastcheng/dicomweb-go/dicomweb)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/toastcheng/dicomweb-go/dicomweb)](https://pkg.go.dev/github.com/toastcheng/dicomweb-go/dicomweb)
 [![Go Report Card](https://goreportcard.com/badge/github.com/toastcheng/dicomweb-go)](https://goreportcard.com/report/github.com/toastcheng/dicomweb-go)
 [![Coverage Status](https://coveralls.io/repos/github/ToastCheng/dicomweb-go/badge.svg?branch=master)](https://coveralls.io/github/ToastCheng/dicomweb-go?branch=master)
 [![GitHub Actions](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftoastcheng%2Fdicomweb-go%2Fbadge&style=flat-square)](https://actions-badge.atrox.dev/toastcheng/dicomweb-go/goto)
