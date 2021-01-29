@@ -41,6 +41,8 @@ type ClientOption struct {
 	WADOEndpoint string
 	// STOWEndpoint endpoint for STOW.
 	STOWEndpoint string
+	// HTTPClient to perform requests. Uses http.DefaultClient otherwise
+	HTTPClient *http.Client
 }
 
 // WithAuthentication configures the client.
@@ -63,8 +65,12 @@ func (c *Client) WithInsecure() *Client {
 
 // NewClient creates a new client.
 func NewClient(option ClientOption) *Client {
+	httpClient := http.DefaultClient
+	if option.HTTPClient != nil {
+		httpClient = option.HTTPClient
+	}
 	return &Client{
-		httpClient:   &http.Client{},
+		httpClient:   httpClient,
 		qidoEndpoint: option.QIDOEndpoint,
 		wadoEndpoint: option.WADOEndpoint,
 		stowEndpoint: option.STOWEndpoint,
