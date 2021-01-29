@@ -81,6 +81,7 @@ func TestClientWithFailingOptionFuncs(t *testing.T) {
 		WADOEndpoint: ts.URL,
 		STOWEndpoint: ts.URL,
 		OptionFuncs: &[]OptionFunc{
+			nil,
 			func(req *http.Request) error {
 				return simulated
 			},
