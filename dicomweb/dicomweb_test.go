@@ -39,6 +39,31 @@ func TestClientWithInsecure(t *testing.T) {
 	assert.Equal(t, true, insecure)
 }
 
+func TestClientWithOptionFunc(t *testing.T) {
+	bearer := "Bearer f2c45335-6bb1-4caf-99d1-7e0849bcad0d"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, bearer, r.Header.Get("Authorization"))
+	}))
+	c := NewClient(ClientOption{
+		QIDOEndpoint: ts.URL,
+		WADOEndpoint: ts.URL,
+		STOWEndpoint: ts.URL,
+		OptionFuncs: &[]OptionFunc{
+			func(req *http.Request) error {
+				req.Header.Set("Authorization", bearer)
+				return nil
+			},
+		},
+	})
+
+	// just make an arbitrary request to mock server.
+	qido := QIDORequest{
+		Type:             Study,
+		StudyInstanceUID: "study-instance-id",
+	}
+	c.Query(qido)
+}
+
 func TestQIDOQueryAllStudy(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/studies", r.URL.String())

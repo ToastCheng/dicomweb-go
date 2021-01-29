@@ -31,7 +31,12 @@ type Client struct {
 	stowEndpoint  string
 	authorization string
 	boundary      string
+	optionFuncs *[]OptionFunc
 }
+
+// OptionFunc is a signature for methods which can modify dicom requests
+// before they are executed. And example would be to inject custom HTTP headers
+type OptionFunc func(*http.Request) error
 
 // ClientOption specifies the option for the DICOMweb client.
 type ClientOption struct {
@@ -43,6 +48,8 @@ type ClientOption struct {
 	STOWEndpoint string
 	// HTTPClient to perform requests. Uses http.DefaultClient otherwise
 	HTTPClient *http.Client
+	// OptionFuncs is an array of OptionFunc which are called before each request
+	OptionFuncs *[]OptionFunc
 }
 
 // WithAuthentication configures the client.
@@ -71,6 +78,7 @@ func NewClient(option ClientOption) *Client {
 	}
 	return &Client{
 		httpClient:   httpClient,
+		optionFuncs: option.OptionFuncs,
 		qidoEndpoint: option.QIDOEndpoint,
 		wadoEndpoint: option.WADOEndpoint,
 		stowEndpoint: option.STOWEndpoint,
@@ -120,6 +128,16 @@ func (c *Client) Query(req QIDORequest) ([]QIDOResponse, error) {
 
 	if c.authorization != "" {
 		r.Header.Set("Authorization", c.authorization)
+	}
+	if c.optionFuncs != nil {
+		for _, fn := range *c.optionFuncs {
+			if fn == nil {
+				continue
+			}
+			if err := fn(r); err != nil {
+				return nil, err
+			}
+		}
 	}
 	resp, err := c.httpClient.Do(r)
 	if err != nil {
@@ -190,6 +208,16 @@ func (c *Client) Retrieve(req WADORequest) ([][]byte, error) {
 	}
 	if c.authorization != "" {
 		r.Header.Set("Authorization", c.authorization)
+	}
+	if c.optionFuncs != nil {
+		for _, fn := range *c.optionFuncs {
+			if fn == nil {
+				continue
+			}
+			if err := fn(r); err != nil {
+				return nil, err
+			}
+		}
 	}
 	resp, err := c.httpClient.Do(r)
 	if err != nil {
@@ -287,7 +315,16 @@ func (c *Client) Store(req STOWRequest) (interface{}, error) {
 	if c.authorization != "" {
 		r.Header.Set("Authorization", c.authorization)
 	}
-
+	if c.optionFuncs != nil {
+		for _, fn := range *c.optionFuncs {
+			if fn == nil {
+				continue
+			}
+			if err := fn(r); err != nil {
+				return nil, err
+			}
+		}
+	}
 	resp, err := c.httpClient.Do(r)
 	if err != nil {
 		return nil, err
