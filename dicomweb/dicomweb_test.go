@@ -208,6 +208,12 @@ part: 1
 	}))
 	c := NewClient(ClientOption{
 		WADOEndpoint: ts.URL,
+		OptionFuncs: &[]OptionFunc{
+			func(req *http.Request) error {
+				// Noop
+				return nil
+			},
+		},
 	}).WithAuthentication("user:name")
 
 	studyInstanceUID := "study-id"
@@ -696,6 +702,12 @@ func TestSTOWStore(t *testing.T) {
 
 	c := NewClient(ClientOption{
 		STOWEndpoint: ts.URL,
+		OptionFuncs: &[]OptionFunc{
+			func(req *http.Request) error {
+				// Noop
+				return nil
+			},
+		},
 	})
 
 	parts := [][]byte{}
