@@ -39,6 +39,70 @@ func TestClientWithInsecure(t *testing.T) {
 	assert.Equal(t, true, insecure)
 }
 
+func TestClientWithCustomHttpClient(t *testing.T) {
+	custom := &http.Client{}
+	c := NewClient(ClientOption{
+		HTTPClient: custom,
+	})
+	assert.Equal(t, custom, c.httpClient)
+}
+
+func TestClientWithOptionFunc(t *testing.T) {
+	bearer := "Bearer f2c45335-6bb1-4caf-99d1-7e0849bcad0d"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, bearer, r.Header.Get("Authorization"))
+	}))
+	c := NewClient(ClientOption{
+		QIDOEndpoint: ts.URL,
+		WADOEndpoint: ts.URL,
+		STOWEndpoint: ts.URL,
+		OptionFuncs: &[]OptionFunc{
+			func(req *http.Request) error {
+				req.Header.Set("Authorization", bearer)
+				return nil
+			},
+		},
+	})
+
+	// just make an arbitrary request to mock server.
+	qido := QIDORequest{
+		Type:             Study,
+		StudyInstanceUID: "study-instance-id",
+	}
+	c.Query(qido)
+}
+
+func TestClientWithFailingOptionFuncs(t *testing.T) {
+	simulated := fmt.Errorf("simulated error")
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	}))
+	c := NewClient(ClientOption{
+		QIDOEndpoint: ts.URL,
+		WADOEndpoint: ts.URL,
+		STOWEndpoint: ts.URL,
+		OptionFuncs: &[]OptionFunc{
+			nil,
+			func(req *http.Request) error {
+				return simulated
+			},
+		},
+	})
+
+	_, err := c.Query(QIDORequest{
+		Type:             Study,
+		StudyInstanceUID: "study-instance-id",
+	})
+	assert.Equal(t, simulated, err)
+	_, err = c.Store(STOWRequest{})
+	assert.Equal(t, simulated, err)
+	wado := WADORequest{
+		Type:             StudyRaw,
+		StudyInstanceUID: "test",
+	}
+	_, err = c.Retrieve(wado)
+	assert.Equal(t, simulated, err)
+}
+
 func TestQIDOQueryAllStudy(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/studies", r.URL.String())
@@ -183,6 +247,12 @@ part: 1
 	}))
 	c := NewClient(ClientOption{
 		WADOEndpoint: ts.URL,
+		OptionFuncs: &[]OptionFunc{
+			func(req *http.Request) error {
+				// Noop
+				return nil
+			},
+		},
 	}).WithAuthentication("user:name")
 
 	studyInstanceUID := "study-id"
@@ -671,6 +741,12 @@ func TestSTOWStore(t *testing.T) {
 
 	c := NewClient(ClientOption{
 		STOWEndpoint: ts.URL,
+		OptionFuncs: &[]OptionFunc{
+			func(req *http.Request) error {
+				// Noop
+				return nil
+			},
+		},
 	})
 
 	parts := [][]byte{}
